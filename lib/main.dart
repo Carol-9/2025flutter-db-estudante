@@ -10,6 +10,9 @@ class app extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: "CRUD Estudante", home: pag1());
+    return MaterialApp(
+        title: "CRUD Estudante",
+        home: pag1(),
+        debugShowCheckedModeBanner: false);
   }
 }

@@ -1,25 +1,26 @@
 import 'package:dbestudante/DatabaseHelper.dart';
-import 'package:dbestudante/estudante.dart';
+import 'package:dbestudante/disciplina.dart';
+import 'package:dbestudante/disciplina.dart';
 import 'package:sqflite/sqflite.dart';
 
-class EstudanteDao {
+class DisciplinaDao {
   final Databasehelper _dbHelper = Databasehelper();
 
   //Incluir no banco
-  Future<void> incluirEstudante(Estudante e) async {
+  Future<void> incluirDisciplina(Disciplina e) async {
     final db = await _dbHelper.database;
-    await db.insert( 
-      "estudante",
+    await db.insert(
+      "disciplina",
       e.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
   //Editar no banco
-  Future<void> editarEstudante(Estudante e) async {
+  Future<void> editarDisciplina(Disciplina e) async {
     final db = await _dbHelper.database;
     await db.update(
-      "estudante",
+      "disciplina",
       e.toMap(),
       where: "id = ?",
       whereArgs: [e.id],
@@ -27,20 +28,20 @@ class EstudanteDao {
   }
 
   //excluir
-  Future<void> deleteEstudante(int index) async {
+  Future<void> deleteDisciplina(int index) async {
     final db = await _dbHelper.database;
     await db.delete(
-      "estudante",
+      "disciplina",
       where: "id = ?",
       whereArgs: [index],
     );
   }
 
-  Future<List<Estudante>> listarEstudantes() async {
+  Future<List<Disciplina>> listarDisciplina() async {
     final db = await _dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query("estudante");
+    final List<Map<String, dynamic>> maps = await db.query("disciplina");
     return List.generate(maps.length, (index) {
-      return Estudante.fromMap(maps[index]);
+      return Disciplina.fromMap(maps[index]);
     });
   }
 }

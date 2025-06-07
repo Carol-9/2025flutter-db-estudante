@@ -1,5 +1,7 @@
 import 'package:dbestudante/estudante.dart';
+import 'package:dbestudante/disciplina.dart';
 import 'package:dbestudante/estudante_dao.dart';
+import 'package:dbestudante/disciplina_dao.dart';
 import 'package:flutter/material.dart';
 
 class pag1 extends StatefulWidget {
@@ -11,6 +13,7 @@ class pag1 extends StatefulWidget {
 
 class _pag1State extends State<pag1> {
   final _estudanteDAO = EstudanteDao();
+  final _disciplinaDAO = DisciplinaDao();
   Estudante? _estudanteAtual;
 
   final _controllerNome = TextEditingController();
@@ -21,9 +24,21 @@ class _pag1State extends State<pag1> {
     Estudante(nome: "Jorge", matricula: "7654321")
   ];
 
+  // List <Disciplina> _listaDisciplina = [
+  //   Disciplina(nome: "Matematica", professor: "Prof. Victor"),
+  //   Disciplina(nome: "Portugues", professor: "Prof. Victor"),
+  //   Disciplina(nome: "Historia", professor: "Prof. Victor"),
+  // ];
+
   @override
   void initState() {
     _loadEstudantes();
+    super.initState();
+  }
+  
+  @override
+  void initState2(){
+    _loadDisciplina();
     super.initState();
   }
 
@@ -33,6 +48,14 @@ class _pag1State extends State<pag1> {
       _listaEstudantes = temp;
     });
   }
+  
+_loadDisciplina() async {
+    List<Disciplina> temp = await _disciplinaDAO.listarDisciplina();
+    setState(() {
+      // _listaDisciplina = temp;
+    });
+  }
+
 
   _salvarOUEditar() async {
     if (_estudanteAtual == null) {

@@ -26,6 +26,10 @@ class Databasehelper {
   Future _onCreate(Database db, int version) async {
     await db.execute(
         'CREATE TABLE IF NOT EXISTS estudante(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, matricula TEXT)');
+    await db.execute(
+        'CREATE TABLE IF NOT EXISTS disciplina(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, professor TEXT, FOREIGN KEY(id_estudante) REFERENCES estudante(id))');
+    await db.execute(
+        'SELECT d.nome AS disciplina, d.professor, e.nome AS estudante FROM disciplina d JOIN estudante e ON d.id_estudante = e.id');
   }
 
   Future close() async {
