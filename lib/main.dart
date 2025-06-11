@@ -12,7 +12,7 @@ class app extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: "CRUD Estudante",
-        home: pag1(),
+        home: Pag1(),
         debugShowCheckedModeBanner: false);
   }
 }

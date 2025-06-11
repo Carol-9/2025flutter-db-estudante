@@ -1,161 +1,156 @@
+import 'package:flutter/material.dart';
 import 'package:dbestudante/estudante.dart';
 import 'package:dbestudante/disciplina.dart';
 import 'package:dbestudante/estudante_dao.dart';
 import 'package:dbestudante/disciplina_dao.dart';
-import 'package:flutter/material.dart';
+import 'package:dbestudante/cursando_dao.dart';
 
-class pag1 extends StatefulWidget {
-  const pag1({super.key});
+class Pag1 extends StatefulWidget {
+  const Pag1({super.key});
 
   @override
-  State<pag1> createState() => _pag1State();
+  State<Pag1> createState() => _Pag1State();
 }
 
-class _pag1State extends State<pag1> {
-  final _estudanteDAO = EstudanteDao();
-  final _disciplinaDAO = DisciplinaDao();
-  Estudante? _estudanteAtual;
+class _Pag1State extends State<Pag1> {
+  final _estudanteDao = EstudanteDao();
+  final _disciplinaDao = DisciplinaDao();
+  final _cursandoDao = CursandoDao();
 
   final _controllerNome = TextEditingController();
   final _controllerMatricula = TextEditingController();
-  List<Estudante> _listaEstudantes = [
-    Estudante(nome: "Fulano", matricula: "123456"),
-    Estudante(nome: "Ciclano", matricula: "789123"),
-    Estudante(nome: "Jorge", matricula: "7654321")
-  ];
 
-  // List <Disciplina> _listaDisciplina = [
-  //   Disciplina(nome: "Matematica", professor: "Prof. Victor"),
-  //   Disciplina(nome: "Portugues", professor: "Prof. Victor"),
-  //   Disciplina(nome: "Historia", professor: "Prof. Victor"),
-  // ];
+  List<Estudante> _listaEstudantes = [];
+  Estudante? _estudanteAtual;
 
   @override
   void initState() {
+    super.initState();
     _loadEstudantes();
-    super.initState();
-  }
-  
-  @override
-  void initState2(){
-    _loadDisciplina();
-    super.initState();
   }
 
-  _loadEstudantes() async {
-    List<Estudante> temp = await _estudanteDAO.listarEstudantes();
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<void> _loadEstudantes() async {
+    final lista = await _estudanteDao.listarEstudantes();
     setState(() {
-      _listaEstudantes = temp;
-    });
-  }
-  
-_loadDisciplina() async {
-    List<Disciplina> temp = await _disciplinaDAO.listarDisciplina();
-    setState(() {
-      // _listaDisciplina = temp;
+      _listaEstudantes = lista;
     });
   }
 
 
-  _salvarOUEditar() async {
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<void> _salvarOuEditar() async {
+    final nome = _controllerNome.text.trim();
+    final matricula = _controllerMatricula.text.trim();
+
+    if (nome.isEmpty || matricula.isEmpty) return;
+
     if (_estudanteAtual == null) {
-      //novo estudante
-      await _estudanteDAO.incluirEstudante(Estudante(
-          nome: _controllerNome.text, matricula: _controllerMatricula.text));
+      await _estudanteDao.incluirEstudante(Estudante(nome: nome, matricula: matricula));
     } else {
-      //atualizar estudante
-      _estudanteAtual!.nome = _controllerNome.text;
-      _estudanteAtual!.matricula = _controllerMatricula.text;
-      await _estudanteDAO.editarEstudante(_estudanteAtual!);
+      _estudanteAtual!.nome = nome;
+      _estudanteAtual!.matricula = matricula;
+      await _estudanteDao.editarEstudante(_estudanteAtual!);
     }
+
     _controllerNome.clear();
     _controllerMatricula.clear();
-    setState(() {
-      _loadEstudantes();
-      _estudanteAtual = null;
-    });
+    _estudanteAtual = null;
+    await _loadEstudantes();
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<void> _apagarEstudante(int id) async {
+    await _estudanteDao.deleteEstudante(id);
+    await _loadEstudantes();
   }
 
-  _apagarEstudante(int index) async {
-    await _estudanteDAO.deleteEstudante(index);
-    _loadEstudantes();
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<void> _mostrarDisciplinasDoEstudante(Estudante estudante) async {
+    final disciplinas = await _cursandoDao.listarDisciplinasDoEstudante(estudante.id!);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Disciplinas de ${estudante.nome}'),
+        content: disciplinas.isEmpty
+            ? Text("Nenhuma disciplina encontrada.")
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: disciplinas
+                    .map((d) => Text("${d['nome']} - ${d['professor']}"))
+                    .toList(),
+              ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Fechar'))
+        ],
+      ),
+    );
   }
 
-  _editarEstudante(Estudante e) async {
-    await _estudanteDAO.editarEstudante(e);
-    _loadEstudantes();
-  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("CRUD Estudante"),
-        backgroundColor: Colors.cyan,
+        title: const Text('Estudantes'),
+        backgroundColor: Colors.teal,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            TextField(
               controller: _controllerNome,
-              decoration: InputDecoration(
-                labelText: "Nome",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                ),
-              ),
+              decoration: InputDecoration(labelText: 'Nome'),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
+            SizedBox(height: 8),
+            TextField(
               controller: _controllerMatricula,
-              decoration: InputDecoration(
-                labelText: "Matricula",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                ),
+              decoration: InputDecoration(labelText: 'Matrícula'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _salvarOuEditar,
+              child: Text(_estudanteAtual == null ? 'Salvar' : 'Atualizar'), // help
+            ),
+            SizedBox(height: 12),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _listaEstudantes.length,
+                itemBuilder: (context, index) {
+                  final estudante = _listaEstudantes[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(estudante.nome),
+                      subtitle: Text('Matrícula: ${estudante.matricula}'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _apagarEstudante(estudante.id!),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _estudanteAtual = estudante;
+                          _controllerNome.text = estudante.nome;
+                          _controllerMatricula.text = estudante.matricula;
+                        });
+                        _mostrarDisciplinasDoEstudante(estudante);
+                      },
+                    ),
+                  );
+                },
               ),
-            ),
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: ElevatedButton(
-              onPressed: () {
-                _salvarOUEditar();
-              },
-              child:
-                  _estudanteAtual == null ? Text("Salvar") : Text("Atualizar"),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _listaEstudantes.length,
-              itemBuilder: (context, index) {
-                //colocar a logica para criar cada item a partir da lista Estudantes
-                return ListTile(
-                  title: Text(_listaEstudantes[index].nome),
-                  subtitle: Text(_listaEstudantes[index].matricula),
-                  trailing: IconButton(
-                    onPressed: () {
-                      _apagarEstudante(_listaEstudantes[index].id!);
-                    },
-                    icon: Icon(Icons.delete),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _estudanteAtual = _listaEstudantes[index];
-                      _controllerNome.text = _estudanteAtual!.nome;
-                      _controllerMatricula.text = _estudanteAtual!.matricula;
-                      _editarEstudante(_estudanteAtual!);
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+            )
+          ],
+        ),
       ),
     );
   }

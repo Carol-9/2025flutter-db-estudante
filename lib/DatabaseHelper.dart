@@ -29,7 +29,7 @@ class Databasehelper {
     await db.execute(
         'CREATE TABLE IF NOT EXISTS disciplina(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, professor TEXT, FOREIGN KEY(id_estudante) REFERENCES estudante(id))');
     await db.execute(
-        'SELECT d.nome AS disciplina, d.professor, e.nome AS estudante FROM disciplina d JOIN estudante e ON d.id_estudante = e.id');
+        'CREATE TABLE IF NOT EXISTS cursando ( id_estudante INTEGER, id_disciplina INTEGER, FOREIGN KEY(id_estudante) REFERENCES estudante(id), FOREIGN KEY(id_disciplina) REFERENCES disciplina(id), PRIMARY KEY (id_estudante, id_disciplina)');
   }
 
   Future close() async {
